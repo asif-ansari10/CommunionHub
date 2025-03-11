@@ -1,59 +1,75 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import eventData from "../eventDetails.json"; // Import JSON file
+import { useNavigate } from "react-router-dom"; // Correct import for React Router
+import { getEvents } from "../firebase/firebaseService"; // Ensure correct import
 
 const UpcomingEvents = () => {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-
-  const navigate = useNavigate(); // For navigation
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDate, setSelectedDate] = useState(""); // Single date filter
+  const navigate = useNavigate(); // Correct way to navigate in React Router
 
   useEffect(() => {
-    setEvents(eventData);
-    setFilteredEvents(eventData); // Initialize with all events
+    const fetchEvents = async () => {
+      const eventList = await getEvents();
+      const today = new Date().toISOString().split("T")[0];
+
+      // Filter upcoming events
+      let futureEvents = eventList.filter((event) => event.date >= today);
+
+      // Sort events by date (ascending order)
+      futureEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      setEvents(futureEvents);
+      setFilteredEvents(futureEvents);
+    };
+
+    fetchEvents();
   }, []);
 
-  // Function to filter events by category and date
-  const filterEvents = (category, date) => {
-    let filtered = eventData;
+  // Apply filters
+  useEffect(() => {
+    let filtered = events;
 
-    if (category) {
-      filtered = filtered.filter((event) => event.category === category);
+    if (categoryFilter) {
+      filtered = filtered.filter((event) => event.category === categoryFilter);
     }
 
-    if (date) {
-      filtered = filtered.filter((event) => event.date === date);
+    if (searchQuery) {
+      filtered = filtered.filter((event) =>
+        event.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    if (selectedDate) {
+      filtered = filtered.filter((event) => event.date === selectedDate);
     }
 
     setFilteredEvents(filtered);
-  };
-
-  // Handle category filter change
-  const handleCategoryChange = (e) => {
-    const category = e.target.value;
-    setSelectedCategory(category);
-    filterEvents(category, selectedDate);
-  };
-
-  // Handle date filter change
-  const handleDateChange = (e) => {
-    const date = e.target.value;
-    setSelectedDate(date);
-    filterEvents(selectedCategory, date);
-  };
+  }, [categoryFilter, searchQuery, selectedDate, events]);
 
   return (
     <div className="container my-5">
       <h2 className="text-center fw-bold mb-4">Upcoming Events</h2>
 
-      {/* Filters Section */}
+      {/* Filters */}
       <div className="row mb-4">
-        {/* Category Filter */}
-        <div className="col-md-6">
-          <label className="form-label fw-bold">Filter by Category:</label>
-          <select className="form-select" value={selectedCategory} onChange={handleCategoryChange}>
+        <div className="col-md-4">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search events..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="col-md-4">
+          <select
+            className="form-select"
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
             <option value="">All Categories</option>
             <option value="Social">Social</option>
             <option value="Technology">Technology</option>
@@ -69,20 +85,17 @@ const UpcomingEvents = () => {
             <option value="Other">Other</option>
           </select>
         </div>
-
-        {/* Date Filter */}
-        <div className="col-md-6">
-          <label className="form-label fw-bold">Filter by Date:</label>
+        <div className="col-md-4">
           <input
             type="date"
             className="form-control"
             value={selectedDate}
-            onChange={handleDateChange}
+            onChange={(e) => setSelectedDate(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Events Grid */}
+      {/* Events List */}
       <div className="row">
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
@@ -90,21 +103,25 @@ const UpcomingEvents = () => {
               <div className="card shadow-lg border-0">
                 <div className="card-body">
                   <h5 className="card-title fw-bold">{event.title}</h5>
-                  <p className="card-text"><strong>Date:</strong> {event.date}</p>
-                  <p className="card-text"><strong>Category:</strong> {event.category}</p>
+                  <p className="card-text">
+                    <strong>Date:</strong> {event.date}
+                  </p>
+                  <p className="card-text">
+                    <strong>Category:</strong> {event.category}
+                  </p>
                 </div>
               </div>
             </div>
           ))
         ) : (
-          <p className="text-center">No events found for this filter.</p>
+          <p className="text-center">No events found for this date.</p>
         )}
       </div>
 
-      {/* Create Event Button */}
+      {/* Create Event Button at the End */}
       <div className="text-center mt-4">
-        <button className="btn btn-primary px-4 py-2 fw-bold" onClick={() => navigate("/createevents")}>
-          + Create New Event
+        <button className="btn btn-success" onClick={() => navigate("/createevents")}>
+          + Create Event
         </button>
       </div>
     </div>

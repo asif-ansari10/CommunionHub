@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { saveEvent } from "../firebase/firebaseService";
 
 const CreateEvents = () => {
   const [event, setEvent] = useState({
@@ -17,21 +18,12 @@ const CreateEvents = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:5000/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(event),
-      });
-
-      if (response.ok) {
-        setMessage("Event saved successfully!");
-        setEvent({ title: "", date: "", category: "" }); // Clear form
-      } else {
-        setMessage("Failed to save event.");
-      }
+      await saveEvent(event);
+      setMessage("✅ Event saved successfully!");
+      setEvent({ title: "", date: "", category: "" }); // Clear form
     } catch (error) {
-      console.error("Error:", error);
-      setMessage("Error saving event.");
+      console.error("❌ Error saving event:", error);
+      setMessage("❌ Error saving event.");
     }
   };
 
@@ -39,7 +31,6 @@ const CreateEvents = () => {
     <div className="container mt-5">
       <h2 className="text-center fw-bold">Create Event</h2>
 
-      {/* Success Message */}
       {message && <div className="alert alert-success">{message}</div>}
 
       <form onSubmit={handleSubmit} className="p-4 bg-light shadow rounded">
@@ -67,7 +58,6 @@ const CreateEvents = () => {
           />
         </div>
 
-        {/* Category Dropdown */}
         <div className="mb-3">
           <label className="form-label">Category</label>
           <select
@@ -93,7 +83,9 @@ const CreateEvents = () => {
           </select>
         </div>
 
-        <button type="submit" className="btn btn-primary w-100">Save Event</button>
+        <button type="submit" className="btn btn-primary w-100">
+          Save Event
+        </button>
       </form>
     </div>
   );
