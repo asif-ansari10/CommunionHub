@@ -1,24 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Correct import for React Router
-import { getEvents } from "../firebase/firebaseService"; // Ensure correct import
+import { useNavigate } from "react-router-dom";
+import { getEvents } from "../firebase/firebaseService";
+import { FaCalendarAlt, FaMapMarkerAlt } from "react-icons/fa";
 
 const UpcomingEvents = () => {
   const [events, setEvents] = useState([]);
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDate, setSelectedDate] = useState(""); // Single date filter
-  const navigate = useNavigate(); // Correct way to navigate in React Router
+  const [selectedDate, setSelectedDate] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEvents = async () => {
       const eventList = await getEvents();
       const today = new Date().toISOString().split("T")[0];
 
-      // Filter upcoming events
       let futureEvents = eventList.filter((event) => event.date >= today);
-
-      // Sort events by date (ascending order)
       futureEvents.sort((a, b) => new Date(a.date) - new Date(b.date));
 
       setEvents(futureEvents);
@@ -28,7 +26,6 @@ const UpcomingEvents = () => {
     fetchEvents();
   }, []);
 
-  // Apply filters
   useEffect(() => {
     let filtered = events;
 
@@ -49,11 +46,35 @@ const UpcomingEvents = () => {
     setFilteredEvents(filtered);
   }, [categoryFilter, searchQuery, selectedDate, events]);
 
+  const formatDate = (dateString) => {
+    const eventDate = new Date(dateString);
+    return eventDate.toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const categoryColors = {
+    Social: "bg-info",
+    Technology: "bg-primary",
+    Sports: "bg-success",
+    Education: "bg-warning",
+    Health: "bg-danger",
+    Religious: "bg-dark",
+    Party: "bg-pink",
+    Charity: "bg-teal",
+    Community: "bg-purple",
+    Cultural: "bg-indigo",
+    Music: "bg-orange",
+    Other: "bg-secondary",
+  };
+
   return (
     <div className="container my-5">
       <h2 className="text-center fw-bold mb-4">Upcoming Events</h2>
 
-      {/* Filters */}
       <div className="row mb-4">
         <div className="col-md-4">
           <input
@@ -71,18 +92,11 @@ const UpcomingEvents = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="">All Categories</option>
-            <option value="Social">Social</option>
-            <option value="Technology">Technology</option>
-            <option value="Sports">Sports</option>
-            <option value="Education">Education</option>
-            <option value="Health">Health</option>
-            <option value="Religious">Religious</option>
-            <option value="Party">Party</option>
-            <option value="Charity">Charity</option>
-            <option value="Community">Community</option>
-            <option value="Cultural">Cultural</option>
-            <option value="Music">Music</option>
-            <option value="Other">Other</option>
+            {Object.keys(categoryColors).map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
           </select>
         </div>
         <div className="col-md-4">
@@ -95,20 +109,117 @@ const UpcomingEvents = () => {
         </div>
       </div>
 
-      {/* Events List */}
       <div className="row">
         {filteredEvents.length > 0 ? (
           filteredEvents.map((event) => (
             <div className="col-md-4 mb-4" key={event.id}>
-              <div className="card shadow-lg border-0">
+              <div
+                className="card shadow-lg border-0 rounded-4 overflow-hidden position-relative"
+                style={{
+                  transition: "0.3s ease-in-out",
+                  cursor: "pointer",
+                  backgroundColor: "#f8f9fa",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.transform = "scale(1.03)")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.transform = "scale(1)")
+                }
+              >
+                {/* Category Badge at Top Left */}
+
+                <span
+                  className={`badge text-black px-3 py-1 rounded-pill position-absolute`}
+                  style={{
+                    top: "10px",
+                    left: "10px",
+                    fontSize: "0.85rem",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #ddd",
+                  }}
+                >
+                  {event.category}
+                </span>
+
+                {/* 📅 Date Badge (Top Right) */}
+                <div
+                  className="position-absolute text-center text-white"
+                  style={{
+                    top: "10px",
+                    right: "10px",
+                    backgroundColor: "#fff",
+                    color: "#000",
+                    padding: "6px 12px",
+                    borderRadius: "10px",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                  }}
+                >
+                  <small
+                    className="d-block text-uppercase fw-bold"
+                    style={{ fontSize: "0.75rem", color: "#000000" }}
+                  >
+                    {new Date(event.date).toLocaleString("en-US", {
+                      month: "short",
+                    })}
+                  </small>
+                  <span
+                    className="fw-bold"
+                    style={{ fontSize: "1.5rem", color: "#000000" }}
+                  >
+                    {new Date(event.date).getDate()}
+                  </span>
+                </div>
+
+                <img
+                  src={event.imageUrl || "https://via.placeholder.com/400"}
+                  alt={event.title}
+                  className="card-img-top"
+                  style={{
+                    height: "220px",
+                    objectFit: "cover",
+                    borderBottom: "4px solid #007bff",
+                  }}
+                />
+
                 <div className="card-body">
-                  <h5 className="card-title fw-bold">{event.title}</h5>
-                  <p className="card-text">
-                    <strong>Date:</strong> {event.date}
+                  <h5 className="card-title fw-bold fs-3 text-uppercase">
+                    {event.title}
+                  </h5>
+
+                  {/* Event Date & Location */}
+                  <p className="card-text text-muted mb-1">
+                    <FaCalendarAlt className="me-2 text-black" />
+                    {formatDate(event.date)}
                   </p>
-                  <p className="card-text">
-                    <strong>Category:</strong> {event.category}
-                  </p>
+                  {event.location && (
+                    <p className="card-text text-muted">
+                      <FaMapMarkerAlt className="me-2 text-danger" />
+                      {event.location}
+                    </p>
+                  )}
+
+                  <button
+                    className="btn w-100 mt-3 fw-bold"
+                    style={{
+                      background: "linear-gradient(45deg, #28a745, #218838)",
+                      color: "#fff",
+                      padding: "10px 15px",
+                      borderRadius: "8px",
+                      transition: "0.3s ease-in-out",
+                      fontSize: "1rem",
+                    }}
+                    onMouseOver={(e) =>
+                      (e.target.style.background =
+                        "linear-gradient(45deg, #218838, #1e7e34)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.target.style.background =
+                        "linear-gradient(45deg, #28a745, #218838)")
+                    }
+                  >
+                    Event Details
+                  </button>
                 </div>
               </div>
             </div>
@@ -118,10 +229,27 @@ const UpcomingEvents = () => {
         )}
       </div>
 
-      {/* Create Event Button at the End */}
       <div className="text-center mt-4">
-        <button className="btn btn-success" onClick={() => navigate("/createevents")}>
-          + Create Event
+        <button
+          className="fw-bold px-4 py-2 rounded-pill shadow-lg"
+          style={{
+            background: "transparent",
+            border: "2px solid #28a745",
+            color: "#28a745",
+            fontSize: "1.2rem",
+            transition: "0.3s ease-in-out",
+          }}
+          onMouseOver={(e) => {
+            e.target.style.background = "#28a745";
+            e.target.style.color = "#fff";
+          }}
+          onMouseOut={(e) => {
+            e.target.style.background = "transparent";
+            e.target.style.color = "#28a745";
+          }}
+          onClick={() => navigate("/createevents")}
+        >
+          Create Event
         </button>
       </div>
     </div>
