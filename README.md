@@ -39,6 +39,51 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
 
+
+Features
+✅ Create events with an image upload feature.
+✅ Store images in Cloudinary and save their URLs in Firebase.
+✅ Display a list of upcoming events dynamically.
+✅ Responsive and user-friendly UI.
+
+Tech Stack
+Frontend: React, React Router, Bootstrap
+Backend: Firebase (Firestore for database)
+Storage: Cloudinary (for image uploads)
+Installation & Setup
+1. Clone the Repository
+sh
+Copy
+Edit
+git clone https://github.com/asif-ansari10/CommunionHub.git
+cd CommunionHub
+2. Install Dependencies
+sh
+Copy
+Edit
+npm install
+3. Set Up Environment Variables
+Create a .env file in the root directory and add your Firebase and Cloudinary credentials:
+
+sh
+Copy
+Edit
+REACT_APP_FIREBASE_API_KEY=your_firebase_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_firebase_auth_domain
+REACT_APP_FIREBASE_PROJECT_ID=your_firebase_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
+REACT_APP_FIREBASE_APP_ID=your_firebase_app_id
+
+REACT_APP_CLOUDINARY_UPLOAD_URL=your_cloudinary_upload_url
+REACT_APP_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+4. Start the Development Server
+sh
+Copy
+Edit
+npm start
+The app will run on http://localhost:3000/.
+
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
